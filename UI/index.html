@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fatality UI</title>
+    <style>
+:root {
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #141414;
+    --panel-bg: #141414;
+    --accent-color: #ff4757;
+    --text-primary: #ffffff;
+    --text-secondary: #888888;
+    --orange-text: #ffa500;
+    --border-color: #1a1a1a;
+    --hover-bg: rgba(255, 255, 255, 0.03);
+    --panel-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    --transition-speed: 0.2s;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: all var(--transition-speed) ease;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #222;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.login-container {
+    width: 600px;
+    background-color: var(--bg-primary);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    position: fixed;
+    border: 1px solid var(--border-color);
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+    transition: none;
+    will-change: transform;
+}
+
+.login-container.dragging {
+    transition: none !important;
+    cursor: move;
+}
+
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        transparent 0%,
+        rgba(255, 71, 87, 0.2) 25%,
+        rgba(255, 71, 87, 0.8) 50%,
+        rgba(255, 71, 87, 0.2) 75%,
+        transparent 100%);
+    background-size: 200% 100%;
+    opacity: 1;
+    animation: gradientMove 2s linear infinite;
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+}
+
+@keyframes gradientMove {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.login-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    cursor: move;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.login-logo {
+    color: #fff;
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+    position: relative;
+}
+
+.login-header .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.login-header .user-info span {
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.login-header .avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.login-content {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background-color: var(--bg-primary);
+    position: relative;
+}
+
+.login-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.login-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.game-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--bg-secondary);
+    padding: 12px;
+    border-radius: 4px 4px 0 0;
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+}
+
+.game-icon {
+    font-size: 1.5rem;
+    opacity: 0.8;
+    color: #888;
+}
+
+.cs2-icon {
+    width: 32px;
+    height: 32px;
+    opacity: 0.9;
+}
+
+.game-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.game-name {
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.product-count {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.cheat-info {
+    background-color: var(--bg-primary);
+    padding: 12px;
+    border-radius: 0 0 4px 4px;
+    border: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
+    position: relative;
+}
+
+.cheat-info::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 70%;
+    background-color: #ff4757;
+    border-radius: 0 1px 1px 0;
+}
+
+.cheat-name {
+    color: #fff;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    padding-left: 8px;
+}
+
+.cheat-details {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    color: #666;
+    font-size: 0.8rem;
+    padding-left: 8px;
+}
+
+.status-online {
+    color: #2ecc71;
+    font-weight: 500;
+}
+
+.changelog {
+    background-color: transparent;
+    border-radius: 4px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.changelog-header {
+    padding: 8px 12px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px 4px 0 0;
+    border-bottom: none;
+    margin-bottom: -8px;
+}
+
+.changelog-content {
+    padding: 12px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    white-space: pre-line;
+    flex: 1;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 0 0 4px 4px;
+    border-top: 1px solid var(--border-color);
+}
+
+.changelog-footer {
+    padding: 8px 12px;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.changelog-footer span {
+    color: #ccc;
+    margin-left: 4px;
+}
+
+.login-footer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.login-buttons {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+}
+
+.exit-button {
+    padding: 6px 24px;
+    border: none;
+    border-radius: 2px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: rgba(20, 20, 20, 0.5);
+    color: #ccc;
+    width: 137px;
+}
+
+.exit-button:hover {
+    background-color: rgba(26, 26, 26, 0.8);
+}
+
+.load-button {
+    padding: 6px 24px;
+    border: none;
+    border-radius: 2px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: rgba(20, 20, 20, 0.5);
+    color: #ccc;
+    width: 137px;
+}
+
+.load-button:hover {
+    background-color: rgba(26, 26, 26, 0.8);
+    color: var(--accent-color);
+}
+
+/* 加载UI样式 */
+.loading-ui {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #141414;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.loading-logo {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    text-shadow: 0 0 20px rgba(255, 71, 87, 0.5);
+    animation: loadingPulse 2s ease-in-out infinite;
+    letter-spacing: 4px;
+}
+
+@keyframes loadingPulse {
+    0%, 100% {
+        color: #fff;
+        text-shadow: 
+            0 0 5px rgba(255, 71, 87, 0.5),
+            0 0 10px rgba(255, 71, 87, 0.5),
+            0 0 15px rgba(255, 71, 87, 0.5),
+            0 0 20px rgba(255, 71, 87, 0.3);
+    }
+    50% {
+        color: var(--accent-color);
+        text-shadow: 
+            0 0 10px rgba(255, 71, 87, 0.8),
+            0 0 20px rgba(255, 71, 87, 0.8),
+            0 0 30px rgba(255, 71, 87, 0.8),
+            0 0 40px rgba(255, 71, 87, 0.5);
+    }
+}
+
+.loading-bar-container {
+    width: 200px;
+    height: 4px;
+    background-color: #333;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.loading-bar {
+    width: 0%;
+    height: 100%;
+    background-color: var(--accent-color);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.loading-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.hidden {
+    display: none !important;
+}
+    </style>
+</head>
+<body>
+    <!-- 登录UI -->
+    <div class="login-ui">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="login-logo">FATALITY</div>
+                <div class="user-info">
+                    <span>fatality</span>
+                    <img class="avatar" src="https://928777311-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/organizations%2FRc8lKzugjqovdk120qVl%2Fsites%2Fsite_dW5Sg%2Ficon%2FR4K8IVAKqKBik6Ct0U3w%2Fimage.avif?alt=media&token=cd45ac3f-9ef5-43a9-a9a3-4919ab291984" alt="User avatar">
+                </div>
+            </div>
+            <div class="login-content">
+                <div class="login-left">
+                    <div class="game-info">
+                        <div class="game-icon">
+                            <img src="cs2-icon.png" alt="CS2" class="cs2-icon">
+                        </div>
+                        <div class="game-details">
+                            <div class="game-name">Counter-Strike 2</div>
+                            <div class="product-count">Products: 1</div>
+                        </div>
+                    </div>
+                    <div class="cheat-info">
+                        <div class="cheat-name">fatality cs2</div>
+                        <div class="cheat-details">
+                            <div>Status: <span class="status-online">Online</span></div>
+                            <div>Version: 1.14.12</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="login-right">
+                    <div class="changelog">
+                        <div class="changelog-header">Changelog</div>
+                        <div class="changelog-content">
+legit:
+- fixed point scale being ignored
+
+lua:
+- fixed lua config entries not being saved</div>
+                        <div class="changelog-footer">
+                            <div>Expires: <span>114514 days</span></div>
+                            <div>Last update: <span>5 days ago</span></div>
+                        </div>
+                    </div>
+                    <div class="login-footer">
+                        <div class="login-buttons">
+                            <button class="exit-button">Exit</button>
+                            <button class="load-button">Load</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载UI -->
+    <div class="loading-ui hidden">
+        <div class="loading-container">
+            <div class="loading-logo">F</div>
+            <div class="loading-bar-container">
+                <div class="loading-bar"></div>
+            </div>
+            <div class="loading-text">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+// 等待 DOM 加载完成
+document.addEventListener('DOMContentLoaded', () => {
+    // 获取UI元素
+    const loginUI = document.querySelector('.login-ui');
+    const loadingUI = document.querySelector('.loading-ui');
+    const loadButton = document.querySelector('.load-button');
+    const exitButton = document.querySelector('.exit-button');
+    const loadingBar = document.querySelector('.loading-bar');
+    const loginContainer = document.querySelector('.login-container');
+    const loginHeader = document.querySelector('.login-header');
+
+    // 拖动相关变量
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+    let animationFrameId = null;
+
+    // 设置元素位置
+    function setTranslate(xPos, yPos, el) {
+        el.style.transform = `translate(calc(-50% + ${xPos}px), calc(-50% + ${yPos}px))`;
+    }
+
+    // 更新位置
+    function updatePosition() {
+        if (isDragging) {
+            setTranslate(currentX, currentY, loginContainer);
+            animationFrameId = requestAnimationFrame(updatePosition);
+        }
+    }
+
+    // 开始拖动
+    function dragStart(e) {
+        if (e.target === loginHeader) {
+            if (e.type === "touchstart") {
+                initialX = e.touches[0].clientX - xOffset;
+                initialY = e.touches[0].clientY - yOffset;
+            } else {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+            }
+            
+            isDragging = true;
+            loginContainer.classList.add('dragging');
+            animationFrameId = requestAnimationFrame(updatePosition);
+        }
+    }
+
+    // 结束拖动
+    function dragEnd() {
+        if (isDragging) {
+            isDragging = false;
+            loginContainer.classList.remove('dragging');
+            cancelAnimationFrame(animationFrameId);
+        }
+    }
+
+    // 拖动过程
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+
+            if (e.type === "touchmove") {
+                currentX = e.touches[0].clientX - initialX;
+                currentY = e.touches[0].clientY - initialY;
+            } else {
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+            }
+
+            xOffset = currentX;
+            yOffset = currentY;
+        }
+    }
+
+    // 添加事件监听
+    loginHeader.addEventListener("touchstart", dragStart, { passive: true });
+    loginHeader.addEventListener("mousedown", dragStart);
+    document.addEventListener("touchend", dragEnd);
+    document.addEventListener("mouseup", dragEnd);
+    document.addEventListener("touchmove", drag, { passive: false });
+    document.addEventListener("mousemove", drag);
+
+    // 退出按钮点击事件
+    exitButton.addEventListener('click', () => {
+        window.close();
+    });
+
+    // 加载按钮点击事件
+    loadButton.addEventListener('click', () => {
+        // 隐藏登录UI
+        loginUI.classList.add('hidden');
+        // 显示加载UI
+        loadingUI.classList.remove('hidden');
+        
+        // 模拟加载进度
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 100) {
+                progress = 100;
+                clearInterval(interval);
+                
+                // 加载完成后
+                setTimeout(() => {
+                    // 隐藏加载UI
+                    loadingUI.classList.add('hidden');
+                    //跳转
+                    window.location.href = './fatality';
+                }, 500);
+            }
+            loadingBar.style.width = `${progress}%`;
+        }, 200);
+    });
+}); 
+    </script>
+</body>
+</html>

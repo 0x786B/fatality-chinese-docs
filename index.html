@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css">
+  <link rel="stylesheet" href="https://npm.elemecdn.com/prism-themes/themes/prism-one-dark.css">
+  <style>
+    /* VS Code 深色模式代码块样式 */
+    :root {
+      --code-theme-background: #1e1e1e;
+      --code-theme-selector: #d7ba7d;
+      --code-theme-tag: #569cd6;
+      --code-theme-function: #dcdcaa;
+      --code-theme-keyword: #c586c0;
+      --code-theme-operator: #d4d4d4;
+      --code-theme-variable: #9cdcfe;
+      --code-theme-comment: #6a9955;
+      --code-theme-string: #ce9178;
+      --code-theme-number: #b5cea8;
+      --code-theme-class: #4ec9b0;
+      --code-theme-attr: #9cdcfe;
+      --code-theme-property: #9cdcfe;
+      --code-theme-built_in: #4ec9b0;
+      --code-theme-namespace: #4ec9b0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script>
+    window.$docsify = {
+      loadSidebar: './sidebar.md',
+      subMaxLevel: 4,
+      sidebarDisplayLevel: 0,
+      auto2top: true,
+      responsiveTables: true,
+      'flexible-alerts': {
+        style: 'flat'
+      },
+      copyCode: {
+        buttonText: '复制代码',
+        errorText: '复制失败',
+        successText: '已复制'
+      },
+      // 添加搜索框中文配置
+      search: {
+        maxAge: 86400000, // 过期时间，单位毫秒，默认一天
+        paths: 'auto',
+        placeholder: '搜索',
+        noData: '未找到相关内容',
+        depth: 6,
+        hideOtherSidebarContent: false
+      },
+      plugins: [
+        function addBadges(hook, vm) {
+          hook.beforeEach(function(content) {
+            return content.replace(
+              /\[\!\[([^\]]+)\]\[([^\]]+)\]([rw]|rw|d|i)\]/g,
+              function(match, text, tooltip, type) {
+                const typeClass = type === 'r' ? 'read' :
+                  type === 'w' ? 'write' :
+                  type === 'rw' ? 'readwrite' :
+                  type === 'i' ? 'insecure' :
+                  'default';
+                return `<span class="badge ${typeClass}" data-tooltip="${tooltip}">
+                  <span>${text}</span>
+                </span>`;
+              }
+            );
+          });
+        },
+        // 增强搜索结果显示
+        function enhanceSearch(hook, vm) {
+          hook.ready(function() {
+            // 监听DOM变化，增强搜索结果
+            const observer = new MutationObserver(function(mutations) {
+              mutations.forEach(function(mutation) {
+                if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                  // 检查是否有搜索结果面板被添加
+                  const resultsPanel = document.querySelector('.search .results-panel');
+                  if (resultsPanel) {
+                    // 添加搜索统计信息
+                    const matchingPosts = resultsPanel.querySelectorAll('.matching-post');
+                    if (matchingPosts.length > 0 && !resultsPanel.querySelector('.search-stat')) {
+                      const statEl = document.createElement('div');
+                      statEl.className = 'search-stat';
+                      statEl.textContent = `找到 ${matchingPosts.length} 个相关结果`;
+                      resultsPanel.appendChild(statEl);
+                    }
+                    
+                    // 为每个搜索结果添加点击效果
+                    matchingPosts.forEach(post => {
+                      if (!post.hasClickListener) {
+                        post.hasClickListener = true;
+                        post.addEventListener('click', function() {
+                          // 点击后关闭搜索结果
+                          const input = document.querySelector('.search input');
+                          if (input) {
+                            input.value = '';
+                            input.dispatchEvent(new Event('input'));
+                          }
+                        });
+                        
+                        // 添加动画效果
+                        post.style.opacity = '0';
+                        post.style.transform = 'translateY(10px)';
+                        setTimeout(() => {
+                          post.style.transition = 'all 0.3s ease';
+                          post.style.opacity = '1';
+                          post.style.transform = 'translateY(0)';
+                        }, 50);
+                      }
+                    });
+                    
+                    // 如果没有结果，美化"未找到结果"提示
+                    const emptyEl = resultsPanel.querySelector('.empty');
+                    if (emptyEl && !emptyEl.classList.contains('styled')) {
+                      emptyEl.classList.add('styled');
+                      emptyEl.innerHTML = `
+                        <div>✧</div>
+                        <div>未找到相关内容</div>
+                        <div>请尝试其他关键词</div>
+                      `;
+                    }
+                  }
+                }
+              });
+            });
+            
+            observer.observe(document.body, { childList: true, subtree: true });
+            
+            // 添加搜索框清除按钮
+            const searchInput = document.querySelector('.search input');
+            if (searchInput && !document.querySelector('.search .clear-button')) {
+              const clearButton = document.createElement('div');
+              clearButton.className = 'clear-button';
+              clearButton.innerHTML = '×';
+              clearButton.style.display = 'none';
+              
+              searchInput.parentNode.style.position = 'relative';
+              searchInput.parentNode.appendChild(clearButton);
+              
+              // 显示/隐藏清除按钮
+              searchInput.addEventListener('input', function() {
+                clearButton.style.display = this.value ? 'flex' : 'none';
+              });
+              
+              // 清除搜索
+              clearButton.addEventListener('click', function() {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+                searchInput.focus();
+              });
+            }
+          });
+        },
+      ],
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/js/docsify-themeable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-lua.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-sidebar-collapse/dist/docsify-sidebar-collapse.min.js"></script>
+  <script>
+    // 添加侧边栏交互动画
+    document.addEventListener('DOMContentLoaded', function() {
+      // 使用一个标志来跟踪是否已经应用了加载动画
+      let animationApplied = false;
+      
+      const observer = new MutationObserver(function() {
+        // 只在首次加载时应用动画
+        if (!animationApplied) {
+          animationApplied = true;
+          
+          // 为侧边栏链接添加过渡动画
+          const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
+          sidebarLinks.forEach((link, index) => {
+            link.style.opacity = '0';
+            link.style.transform = 'translateX(-10px)';
+            setTimeout(() => {
+              link.style.transition = 'all 0.3s ease';
+              link.style.opacity = '1';
+              link.style.transform = 'translateX(0)';
+            }, 50 + index * 20);
+          });
+          
+          // 5秒后断开观察器，防止在导航时重新触发动画
+          setTimeout(() => {
+            observer.disconnect();
+          }, 5000);
+        }
+        
+        // 改进折叠/展开动画
+        document.querySelectorAll('.sidebar-nav li.collapse > a').forEach(item => {
+          if (!item.hasClickListener) {
+            item.hasClickListener = true;
+            item.addEventListener('click', function(e) {
+              const parent = this.parentNode;
+              const subMenu = parent.querySelector('ul');
+              
+              if (!subMenu) return;
+              e.preventDefault();
+              
+              if (parent.classList.contains('open')) {
+                // 折叠动画
+                subMenu.style.overflow = 'hidden';
+                subMenu.style.transition = 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+                
+                // 获取当前高度并设置，以便动画可以从当前高度开始
+                const height = subMenu.scrollHeight;
+                subMenu.style.height = height + 'px';
+                
+                // 强制回流
+                subMenu.offsetHeight;
+                
+                // 开始折叠
+                requestAnimationFrame(() => {
+                  subMenu.style.height = '0px';
+                  subMenu.style.opacity = '0';
+                  subMenu.style.transform = 'translateY(-6px)';
+                  
+                  // 动画完成后移除open类
+                  subMenu.addEventListener('transitionend', function handler() {
+                    parent.classList.remove('open');
+                    subMenu.removeEventListener('transitionend', handler);
+                  }, { once: true });
+                });
+              } else {
+                // 展开动画
+                parent.classList.add('open');
+                subMenu.style.overflow = 'hidden';
+                subMenu.style.height = '0px';
+                subMenu.style.opacity = '0';
+                subMenu.style.transform = 'translateY(-6px)';
+                subMenu.style.transition = 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+                
+                // 强制回流
+                subMenu.offsetHeight;
+                
+                // 开始展开
+                requestAnimationFrame(() => {
+                  subMenu.style.height = subMenu.scrollHeight + 'px';
+                  subMenu.style.opacity = '1';
+                  subMenu.style.transform = 'translateY(0)';
+                  
+                  // 动画完成后清除固定高度
+                  subMenu.addEventListener('transitionend', function handler() {
+                    subMenu.style.height = '';
+                    subMenu.style.overflow = '';
+                    subMenu.removeEventListener('transitionend', handler);
+                  }, { once: true });
+                });
+              }
+            });
+          }
+        });
+      });
+      
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  </script>
+    <style>
+      :root {
+        --base-font-size: 1em;
+        --sidebar-padding: 12px;
+        --sidebar-width: 22rem;
+        --theme-color: #eb055a;
+        --base-background-color: #0f0f11;
+        --sidebar-background: #12121a;
+        --mono-tint1: #1a1a1c;
+        --search-input-background-color: #0a0a0d;
+        --blockquote-background: #191922;
+        --blockquote-border-color: #f45c4a;
+        --code-inline-background: hsla(0, 0%, 100%, 0.05);
+        --code-theme-background: #161620;
+        --copycode-background: #0f0f11;
+        --table-row-odd-background: #0f0f11;
+        --table-head-background: #161620;
+        --blockquote-padding: 0.5rem 1.5rem;
+        --blockquote-border-radius: 8px;
+      }
+    
+      .title {
+        color: inherit !important;
+      }
+    
+      /* 侧边栏样式优化 */
+      .sidebar {
+        padding: 1rem 0;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        background: linear-gradient(to right, #1a1a1c, #161618);
+      }
+
+      .sidebar-nav {
+        padding: 0 var(--sidebar-padding);
+      }
+
+      .sidebar-nav > ul > li > a {
+        font-weight: 500;
+        font-size: 1.05em;
+        margin: 0.5em 0;
+        color: #f0f0f0;
+        position: relative;
+        overflow: hidden;
+        padding: 4px 0;
+      }
+      
+      .sidebar-nav > ul > li > a::after {
+        display: none;
+      }
+      
+      .sidebar-nav > ul > li > a:hover::after {
+        width: 0;
+      }
+
+      .sidebar-nav li {
+        position: relative;
+      }
+
+      .sidebar-nav li > a {
+        padding: 4px 0;
+        transition: all 0.2s ease;
+        color: #a0a0a0;
+        line-height: 1.5;
+        font-size: 0.95em;
+        letter-spacing: 0.2px;
+      }
+
+      .sidebar-nav li > a:hover {
+        color: var(--theme-color);
+        text-decoration: none;
+        background: transparent;
+        border-radius: 0;
+        padding-left: 0;
+        transform: translateX(2px);
+      }
+
+      .sidebar-nav li.active > a {
+        color: var(--theme-color);
+        background: transparent;
+        border-radius: 0;
+        padding-left: 0;
+        font-weight: 500;
+        box-shadow: none;
+      }
+
+      .sidebar ul li ul {
+        margin: 0.2em 0 0.2em 1em;
+        overflow: hidden;
+        transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+                    opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+                    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: height, opacity, transform;
+      }
+
+      .sidebar ul li.collapse {
+        position: relative;
+      }
+
+      .sidebar ul li.collapse::before {
+        content: '';
+        position: absolute;
+        left: -10px;
+        top: 11px;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 4px 0 4px 6px;
+        border-color: transparent transparent transparent rgba(255, 255, 255, 0.3);
+        transition: transform 0.3s ease, border-color 0.3s ease;
+      }
+      
+      .sidebar ul li.collapse:hover::before {
+        border-color: transparent transparent transparent var(--theme-color);
+      }
+
+      .sidebar ul li.open::before {
+        transform: rotate(90deg);
+        border-color: transparent transparent transparent var(--theme-color);
+        opacity: 1;
+      }
+      
+      /* 调整菜单项布局 - 移除左侧填充 */
+      .sidebar ul li.collapse > a {
+        padding-left: 0;
+      }
+      
+      /* 增强可折叠项目的视觉反馈 */
+      .sidebar ul li.collapse:hover > a {
+        color: var(--theme-color);
+      }
+      
+      /* 点击波纹效果 - 修复伪元素冲突 */
+      .sidebar-nav li > a {
+        position: relative;
+        overflow: hidden;
+      }
+      
+      /* 使用不同的伪元素来避免冲突 */
+      .sidebar-nav li > a::before {
+        content: '';
+        display: block;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        background-image: radial-gradient(circle, rgba(255, 255, 255, 0.2) 10%, transparent 10.01%);
+        background-repeat: no-repeat;
+        background-position: 50%;
+        transform: scale(10, 10);
+        opacity: 0;
+        transition: transform 0.5s, opacity 0.8s;
+        z-index: 0;
+      }
+      
+      .sidebar-nav li > a:active::before {
+        transform: scale(0, 0);
+        opacity: 0.3;
+        transition: 0s;
+      }
+
+      /* 侧边栏分组标题 */
+      .sidebar > h1 {
+        font-size: 1.5em;
+        font-weight: 600;
+        margin: 0.5rem var(--sidebar-padding) 1.5rem;
+        color: #fff;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        letter-spacing: 0.5px;
+      }
+
+      /* 侧边栏搜索框优化 */
+      .search {
+        margin: 1.2rem var(--sidebar-padding);
+        padding: 0;
+      }
+
+      .search input {
+        font-size: 0.95em;
+        border-radius: 8px;
+        border: none;
+        background: rgba(0, 0, 0, 0.25);
+        transition: all 0.3s ease;
+        padding: 0.7rem 0.8rem;
+        width: 100%;
+        color: #e3e3e3;
+        padding-left: 36px;
+        padding-right: 36px;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="%23eb055a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>');
+        background-position: 12px center;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(0, 0, 0, 0.15);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+      }
+
+      .search input:focus {
+        background: rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), 0 0 0 2px rgba(235, 5, 90, 0.15);
+        outline: none;
+      }
+      
+      /* 搜索框清除按钮样式 */
+      .search .clear-button {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        background-color: rgba(235, 5, 90, 0.15);
+        border-radius: 50%;
+        color: #eb055a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        transition: all 0.2s ease;
+        opacity: 0.8;
+        /* 确保初始状态为隐藏 */
+        display: none;
+      }
+      
+      .search .clear-button:hover {
+        background-color: rgba(235, 5, 90, 0.25);
+        transform: translateY(-50%) scale(1.1);
+        opacity: 1;
+      }
+      
+      /* 搜索框容器相对定位 */
+      .search .input-wrap {
+        position: relative;
+      }
+      
+      .search input::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+        opacity: 1;
+        font-style: italic;
+      }
+      
+      .search .empty {
+        margin: 0.5rem 0;
+        color: #909090;
+        text-align: center;
+        font-size: 0.9em;
+      }
+      
+      .search .results-panel {
+        margin-top: 0.8rem;
+        background: rgba(20, 20, 23, 0.95);
+        border-radius: 10px;
+        max-height: 450px;
+        overflow-y: auto;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(235, 5, 90, 0.1);
+        width: calc(100% - 4px);
+        margin-left: 2px;
+        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
+      }
+      
+      .search .matching-post {
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.25s ease;
+        cursor: pointer;
+        position: relative;
+        padding-left: 20px;
+      }
+      
+      .search .matching-post:hover {
+        background-color: rgba(235, 5, 90, 0.08);
+        transform: translateX(2px);
+      }
+      
+      .search .matching-post:last-child {
+        border-bottom: none;
+      }
+      
+      .search .matching-post::before {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 18px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background-color: #eb055a;
+        opacity: 0.6;
+        transition: all 0.2s ease;
+      }
+      
+      .search .matching-post:hover::before {
+        opacity: 1;
+        transform: scale(1.2);
+        box-shadow: 0 0 0 2px rgba(235, 5, 90, 0.2);
+      }
+      
+      .search .matching-post h2 {
+        font-size: 1em;
+        margin: 0 0 0.4rem 0;
+        color: #e3e3e3;
+        font-weight: 500;
+        line-height: 1.4;
+      }
+      
+      .search .matching-post p {
+        font-size: 0.85em;
+        margin: 0;
+        color: #a0a0a0;
+        line-height: 1.5;
+        max-height: 4.5em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+      }
+      
+      /* 搜索结果高亮样式 */
+      .search .matching-post mark {
+        background-color: rgba(235, 5, 90, 0.15);
+        color: #ff9ebd;
+        padding: 0 3px;
+        border-radius: 3px;
+        font-weight: 600;
+        box-shadow: 0 0 0 1px rgba(235, 5, 90, 0.1);
+        margin: 0 1px;
+        position: relative;
+        display: inline-block;
+      }
+      
+      .search .matching-post mark::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: rgba(235, 5, 90, 0.4);
+        border-radius: 1px;
+      }
+      
+      /* 搜索结果面板滚动条样式 */
+      .search .results-panel::-webkit-scrollbar {
+        width: 5px;
+      }
+      
+      .search .results-panel::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 3px;
+      }
+      
+      .search .results-panel::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+      
+      .search .results-panel::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      
+      /* 搜索结果计数样式 */
+      .search .search-stat {
+        margin: 0;
+        color: #b0b0b0;
+        font-size: 0.85em;
+        text-align: center;
+        padding: 10px;
+        background-color: rgba(235, 5, 90, 0.05);
+        border-radius: 0 0 10px 10px;
+        border-top: 1px solid rgba(235, 5, 90, 0.1);
+        font-style: italic;
+      }
+      
+      /* 空结果样式 */
+      .search .empty.styled {
+        padding: 30px 20px;
+        text-align: center;
+        color: #a0a0a0;
+      }
+      
+      .search .empty.styled div:first-child {
+        font-size: 32px;
+        margin-bottom: 15px;
+        color: rgba(235, 5, 90, 0.3);
+      }
+      
+      .search .empty.styled div:nth-child(2) {
+        font-size: 1.1em;
+        margin-bottom: 8px;
+        color: #d0d0d0;
+      }
+      
+      .search .empty.styled div:last-child {
+        font-size: 0.9em;
+        color: #808080;
+        font-style: italic;
+      }
+      
+      /* 滚动条美化 */
+      .sidebar::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+      }
+
+      .sidebar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+    
+      .callout {
+        border-top: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+      }
+    
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 3px;
+        background-color: rgb(149, 255, 43);
+        color: #19191c !important;
+        text-decoration: none;
+        margin: 4px 0;
+      }
+    
+      .badge.readwrite {
+        background: #8473ff !important;
+      }
+    
+      .badge.read {
+        background: #ff7936 !important;
+      }
+    
+      .badge.write {
+        background: #4595ff !important;
+      }
+    
+      .badge.insecure {
+        background: #f45c4a !important;
+      }
+    
+      .badge span {
+        padding: 2px 8px;
+      }
+    
+      [data-tooltip],
+      a[data-tooltip] {
+        position: relative;
+      }
+    
+      [data-tooltip]::before,
+      a[data-tooltip]::before {
+        content: attr(data-tooltip);
+        position: absolute;
+        top: 100%;
+        left: 0%;
+        margin-top: 4px;
+        background: #151516;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s, visibility 0.5s;
+        z-index: 1000;
+      }
+    
+      [data-tooltip]:hover::before,
+      a[data-tooltip]:hover::before {
+        opacity: 1;
+        visibility: visible;
+      }
+      
+      /* 代码块样式优化 - VS Code 深色主题 */
+      pre {
+        border-radius: 3px !important;
+        margin: 1.5em 0 !important;
+        box-shadow: none !important;
+        background-color: #070a0f !important;
+        border: 1px solid #1e2736 !important;
+      }
+      
+      pre > code {
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+        font-size: 0.9em !important;
+        line-height: 1.5 !important;
+        padding: 1.2em 1.4em !important;
+      }
+      
+      /* 添加 Prism 语法高亮的特定选择器 */
+      code[class*="language-"],
+      pre[class*="language-"],
+      .token.prolog, 
+      .token.doctype,
+      .token.cdata {
+        background: #070a0f !important;
+      }
+      
+      /* 确保背景颜色能够覆盖到整个代码块 */
+      .prism-one-dark .code-block,
+      .prism-one-dark code[class*="language-"], 
+      .prism-one-dark pre[class*="language-"] {
+        background: #070a0f !important;
+        color: #abb2bf !important;
+      }
+      
+      /* 针对特定的prism-one-dark.css主题 */
+      :not(pre) > code[class*="language-"],
+      pre[class*="language-"] {
+        background: #070a0f !important;
+      }
+      
+      /* 代码复制按钮样式 */
+      .docsify-copy-code-button {
+        font-size: 0.75em !important;
+        padding: 0.5em 0.8em !important;
+        border-radius: 6px !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        top: 8px !important;
+        right: 8px !important;
+        transition: all 0.3s ease !important;
+        font-weight: 500 !important;
+        text-transform: none !important;
+        box-shadow: none !important;
+      }
+      
+      .docsify-copy-code-button.success {
+        color: #42b883 !important;
+      }
+  
+      .docsify-copy-code-button.error {
+        background-color: rgba(255, 70, 70, 0.2) !important;
+        color: #ff4646 !important;
+        border-color: rgba(255, 70, 70, 0.3) !important;
+      }
+      
+      /* 行内代码样式 */
+      code:not([class*="lang-"]):not([class*="language-"]) {
+        color: #81ffcf !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        padding: 0.2em 0.4em !important;
+        border-radius: 3px !important;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+        font-size: 0.9em !important;
+      }
+
+      /* 顶级菜单项下划线效果 - 使用不同的伪元素 */
+      .sidebar-nav > ul > li > a .underline-effect {
+        display: none;
+      }
+      
+      .sidebar-nav > ul > li > a:hover .underline-effect {
+        width: 0;
+      }
+
+      /* 移除侧边栏折叠指示器 */
+      .sidebar ul li.collapse::before {
+        display: none;
+      }
+      
+      /* 隐藏docsify-sidebar-collapse插件的默认箭头 */
+      .sidebar-nav .folder:before,
+      .sidebar-nav .file:before,
+      .sidebar-nav li > span.collapse:before,
+      .sidebar-nav li.collapse .app-sub-sidebar:before,
+      .sidebar-nav li.open > span.collapse:before,
+      .sidebar-nav li.active.collapse .app-sub-sidebar:before,
+      .sidebar-nav li.active.open.collapse .app-sub-sidebar:before {
+        display: none !important;
+      }
+      
+      /* 移除可能的箭头空间 */
+      .sidebar li.folder,
+      .sidebar li.file {
+        padding-left: 0 !important;
+        margin-left: 0 !important;
+      }
+
+      /* 内容区域样式增强 */
+      section.content {
+        background-color: var(--base-background-color);
+        padding: 0 2rem;
+      }
+      
+      .markdown-section {
+        color: #e3e3e3;
+      }
+      
+      .markdown-section h1,
+      .markdown-section h2,
+      .markdown-section h3,
+      .markdown-section h4,
+      .markdown-section h5,
+      .markdown-section h6 {
+        color: #f0f0f0;
+        font-weight: 600;
+      }
+      
+      .markdown-section h1 {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 0.5rem;
+      }
+      
+      .markdown-section p {
+        line-height: 1.7;
+      }
+      
+      .markdown-section blockquote {
+        background-color: var(--blockquote-background);
+      }
+      
+      /* 表格样式增强 - 扁平化风格 */
+      .markdown-section table {
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        overflow: hidden;
+        margin: 1.5rem 0;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background-color: transparent;
+      }
+      
+      .markdown-section tr {
+        transition: none;
+      }
+      
+      .markdown-section tr:hover {
+        background-color: rgba(56, 139, 253, 0.03) !important;
+      }
+      
+      .markdown-section tr:nth-child(even) {
+        background-color: #0e1218;
+      }
+      
+      .markdown-section tr:nth-child(odd) {
+        background-color: #0d1117;
+      }
+      
+      .markdown-section th {
+        background: #161b22;
+        color: #c9d1d9;
+        font-size: 0.95em;
+        padding: 0.8em 1em;
+        text-align: left;
+        font-weight: 600;
+        border: none;
+        border-bottom: 2px solid #30363d;
+        letter-spacing: 0.02em;
+      }
+      
+      .markdown-section th:not(:last-child) {
+        border-right: none;
+      }
+      
+      .markdown-section td {
+        border: none;
+        border-bottom: 1px solid #21262d;
+        padding: 0.8em 1em;
+        font-size: 0.92em;
+        color: #c9d1d9;
+        vertical-align: middle;
+      }
+      
+      .markdown-section tr:last-child td {
+        border-bottom: none;
+      }
+      
+      .markdown-section td:not(:last-child) {
+        border-right: none;
+      }
+      
+      /* 扁平化代码样式 */
+      .markdown-section td code {
+        background-color: #1f2937 !important;
+        color: #79c0ff !important;
+        padding: 0.2em 0.4em !important;
+        border-radius: 2px !important;
+        box-shadow: none !important;
+      }
+      
+      /* 表格中的类型列使用特殊样式 */
+      .markdown-section td:nth-child(2) code {
+        background-color: #1b2130 !important;
+        color: #7ee787 !important;
+        padding: 0.3em 0.5em !important;
+        border-radius: 2px !important;
+        font-weight: 500;
+      }
+      
+      /* 表格中的第一列通常是标识符，给予特殊样式 */
+      .markdown-section td:first-child {
+        font-weight: 500;
+        color: #d2a8ff;
+      }
+      
+      /* 扁平化页面整体样式 */
+      pre {
+        border-radius: 3px !important;
+        box-shadow: none !important;
+      }
+      
+      .markdown-section blockquote {
+        border-left: 3px solid #f78166 !important;
+        border-radius: 0 !important;
+        background-color: rgba(22, 27, 34, 0.5) !important;
+      }
+      
+      /* 减少代码复制按钮的阴影 */
+      .docsify-copy-code-button {
+        box-shadow: none !important;
+        border-radius: 3px !important;
+      }
+    </style>
+</body>
+
+</html>
