@@ -114,4 +114,4 @@
     * [🖥️界面](example/gui.md)
     * [🎨绘制](example/draw.md)
 * [❓其他](/links.md)
-* [🔍 FATALITY 🇨🇳汉化](https://0x786b.github.io/fatality-chinese-docs/UI)
+* [🔍 FATALITY 🇨🇳汉化](https://0x786b.github.io/fatality-chinese-docs/UI/)

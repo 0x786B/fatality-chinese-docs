@@ -11,7 +11,7 @@
 
 <div class="notice-box">
   <div class="notice-content">
-    <strong>本文档由社区用户编写，可能有错误的地方，请以官方文档为准</strong>
+    <strong>本文档由社区用户编写，可能有错误的地方，请以官方文档为准。</strong>
     <div class="notice-links">
       <a href="https://lua.fatality.win/" target="_blank">📚 fatality官方文档主页</a>
       <a href="https://0x786b.github.io/fatality-chinese-docs/" target="_blank">🌐 文档主页</a>
